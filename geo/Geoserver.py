@@ -1931,6 +1931,7 @@ class Geoserver:
         srid: Optional[int] = 4326,
         workspace: Optional[str] = None,
         enabled: Optional[bool] = True,
+        escape_sql: bool = True,
         native_name: Optional[str] = None,
         native_bbox: Optional[Tuple[float, float, float, float]] = None,
         latlon_bbox: Optional[Tuple[float, float, float, float]] = None,
@@ -1964,6 +1965,7 @@ class Geoserver:
             The projection policy for the feature type. For example, "FORCE_DECLARED".
         parameters : dict, optional
             A dictionary containing additional parameters for the SQL view. Key is parameter name and value is the default value for that parameter.
+        escape_sql: Boolean value to determine if SQL queries should be escaped (Default True)
 
         Returns
         -------
@@ -1983,6 +1985,7 @@ class Geoserver:
         srid: Optional[int] = 4326,
         workspace: Optional[str] = None,
         enabled: bool = True,
+        escape_sql=str(escape_sql).lower(),
         native_bbox: Optional[Tuple[float, float, float, float, int]] = None,
         latlon_bbox: Optional[Tuple[float, float, float, float, int]] = None,
         projection_policy: Optional[str] = None,
@@ -2037,7 +2040,7 @@ class Geoserver:
                     <virtualTable>
                         <name>{name}</name>
                         <sql>{sql}</sql>
-                        <escapeSql>false</escapeSql>
+                    <escapeSql>{escape_sql}</escapeSql>
                         <geometry>
                             <name>{geom_name}</name>
                             <type>{geom_type}</type>
