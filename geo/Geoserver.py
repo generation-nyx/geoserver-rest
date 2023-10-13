@@ -2027,7 +2027,7 @@ class Geoserver:
             <enabled>{enabled}</enabled>
             {native_name_tag}
             <namespace>
-                <name>{workspace}</name>
+                <uri>http://{workspace}</uri>
             </namespace>
             <srs>EPSG:{srid}</srs>
             {native_bbox}
