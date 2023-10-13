@@ -1956,12 +1956,10 @@ class Geoserver:
             The workspace where the feature type will be stored. Default is "default".
         enabled : bool, optional
             Whether the feature type is enabled. Default is True.
-        native_name : str, optional
-            The native name of the feature type.
         native_bbox : tuple, optional
-            A tuple containing four float values defining the native bounding box: (minx, maxx, miny, maxy).
+            A tuple containing four float values defining the native bounding box: (minx, maxx, miny, maxy, epsg).
         latlon_bbox : tuple, optional
-            A tuple containing four float values defining the latitude-longitude bounding box: (minx, maxx, miny, maxy).
+            A tuple containing four float values defining the latitude-longitude bounding box: (minx, maxx, miny, maxy,epsg).
         projection_policy : str, optional
             The projection policy for the feature type. For example, "FORCE_DECLARED".
         parameters : dict, optional
@@ -1985,9 +1983,8 @@ class Geoserver:
         srid: Optional[int] = 4326,
         workspace: Optional[str] = None,
         enabled: bool = True,
-        native_name: Optional[str] = None,
-        native_bbox: Optional[Tuple[float, float, float, float]] = None,
-        latlon_bbox: Optional[Tuple[float, float, float, float]] = None,
+        native_bbox: Optional[Tuple[float, float, float, float, int]] = None,
+        latlon_bbox: Optional[Tuple[float, float, float, float, int]] = None,
         projection_policy: Optional[str] = None,
         parameters: Optional[Dict[str, str]] = None,
     ):
@@ -1996,23 +1993,26 @@ class Geoserver:
 
         native_bbox_xml = ""
         if native_bbox:
+            minx, maxx, miny, maxy, native_bbox_epsg = native_bbox
             native_bbox_xml = """<nativeBoundingBox>
                 <minx>{}</minx>
                 <maxx>{}</maxx>
                 <miny>{}</miny>
                 <maxy>{}</maxy>
                 <crs class="projected">EPSG:{}</crs>
-            </nativeBoundingBox>""".format(*native_bbox, srid)
+            </nativeBoundingBox>""".format(minx, maxx, miny, maxy, native_bbox_epsg)
 
         latlon_bbox_xml = ""
         if latlon_bbox:
+            minx, maxx, miny, maxy, latlon_bbox_epsg = latlon_bbox
             latlon_bbox_xml = """<latLonBoundingBox>
                 <minx>{}</minx>
                 <maxx>{}</maxx>
                 <miny>{}</miny>
                 <maxy>{}</maxy>
                 <crs>EPSG:{}</crs>
-            </latLonBoundingBox>""".format(*latlon_bbox, srid)
+            </latLonBoundingBox>""".format(minx, maxx, miny, maxy, latlon_bbox_epsg)
+
 
         parameters_xml = ""
         if parameters:
@@ -2025,7 +2025,6 @@ class Geoserver:
         layer_xml = """<featureType>
             <name>{name}</name>
             <enabled>{enabled}</enabled>
-            {native_name_tag}
             <namespace>
                 <uri>http://{workspace}</uri>
             </namespace>
@@ -2051,7 +2050,6 @@ class Geoserver:
         </featureType>""".format(
             name=name,
             enabled=str(enabled).lower(),
-            native_name_tag=f"<nativeName>{native_name}</nativeName>" if native_name else "",
             workspace=workspace,
             srid=srid,
             native_bbox=native_bbox_xml,
