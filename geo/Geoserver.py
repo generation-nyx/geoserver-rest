@@ -1,6 +1,6 @@
 # inbuilt libraries
 import os
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple, Dict
 
 # third-party libraries
 import requests
@@ -1930,46 +1930,137 @@ class Geoserver:
         geom_type: str = "Geometry",
         srid: Optional[int] = 4326,
         workspace: Optional[str] = None,
+        enabled: Optional[bool] = True,
+        native_name: Optional[str] = None,
+        native_bbox: Optional[Tuple[float, float, float, float]] = None,
+        latlon_bbox: Optional[Tuple[float, float, float, float]] = None,
+        projection_policy: Optional[str] = None,
+        parameters: Optional[Dict[str, Any]] = None,
     ):
         """
-
         Parameters
         ----------
         name : str
+            The name of the feature type.
         store_name : str
+            The name of the data store where the feature type will be stored.
         sql : str
-        geom_name : str
-        geom_type : str
+            The SQL query defining the feature.
+        geom_name : str, optional
+            The name of the geometry column. Default is "geom".
+        geom_type : str, optional
+            The type of geometry. Default is "Geometry".
+        srid : int, optional
+            The spatial reference ID. Default is 4326.
         workspace : str, optional
+            The workspace where the feature type will be stored. Default is "default".
+        enabled : bool, optional
+            Whether the feature type is enabled. Default is True.
+        native_name : str, optional
+            The native name of the feature type.
+        native_bbox : tuple, optional
+            A tuple containing four float values defining the native bounding box: (minx, maxx, miny, maxy).
+        latlon_bbox : tuple, optional
+            A tuple containing four float values defining the latitude-longitude bounding box: (minx, maxx, miny, maxy).
+        projection_policy : str, optional
+            The projection policy for the feature type. For example, "FORCE_DECLARED".
+        parameters : dict, optional
+            A dictionary containing additional parameters for the SQL view. Key is parameter name and value is the default value for that parameter.
 
+        Returns
+        -------
+        int
+            Returns 201 if the feature type was successfully created.
+
+        Notes
+        -----
         """
+    def publish_featurestore_sqlview(
+        self,
+        name: str,
+        store_name: str,
+        sql: str,
+        geom_name: str = "geom",
+        geom_type: str = "Geometry",
+        srid: Optional[int] = 4326,
+        workspace: Optional[str] = None,
+        enabled: bool = True,
+        native_name: Optional[str] = None,
+        native_bbox: Optional[Tuple[float, float, float, float]] = None,
+        latlon_bbox: Optional[Tuple[float, float, float, float]] = None,
+        projection_policy: Optional[str] = None,
+        parameters: Optional[Dict[str, str]] = None,
+    ):
         if workspace is None:
             workspace = "default"
 
+        native_bbox_xml = ""
+        if native_bbox:
+            native_bbox_xml = """<nativeBoundingBox>
+                <minx>{}</minx>
+                <maxx>{}</maxx>
+                <miny>{}</miny>
+                <maxy>{}</maxy>
+                <crs class="projected">EPSG:{}</crs>
+            </nativeBoundingBox>""".format(*native_bbox, srid)
+
+        latlon_bbox_xml = ""
+        if latlon_bbox:
+            latlon_bbox_xml = """<latLonBoundingBox>
+                <minx>{}</minx>
+                <maxx>{}</maxx>
+                <miny>{}</miny>
+                <maxy>{}</maxy>
+                <crs>EPSG:{}</crs>
+            </latLonBoundingBox>""".format(*latlon_bbox, srid)
+
+        parameters_xml = ""
+        if parameters:
+            for key, value in parameters.items():
+                parameters_xml += """<parameter>
+                    <name>{}</name>
+                    <defaultValue>{}</defaultValue>
+                </parameter>""".format(key, value)
+
         layer_xml = """<featureType>
-        <name>{0}</name>
-        <enabled>true</enabled>
-        <namespace>
-            <name>{4}</name>
-        </namespace>
-        <title>{0}</title>
-        <srs>EPSG:{5}</srs>
-        <metadata>
-            <entry key="JDBC_VIRTUAL_TABLE">
-                <virtualTable>
-                    <name>{0}</name>
-                    <sql>{1}</sql>
-                    <escapeSql>true</escapeSql>
-                    <geometry>
-                        <name>{2}</name>
-                        <type>{3}</type>
-                        <srid>{5}</srid>
-                    </geometry>
-                </virtualTable>
-            </entry>
-        </metadata>
+            <name>{name}</name>
+            <enabled>{enabled}</enabled>
+            {native_name_tag}
+            <namespace>
+                <name>{workspace}</name>
+            </namespace>
+            <srs>EPSG:{srid}</srs>
+            {native_bbox}
+            {latlon_bbox}
+            {projection_policy_tag}
+            <metadata>
+                <entry key="JDBC_VIRTUAL_TABLE">
+                    <virtualTable>
+                        <name>{name}</name>
+                        <sql>{sql}</sql>
+                        <escapeSql>true</escapeSql>
+                        <geometry>
+                            <name>{geom_name}</name>
+                            <type>{geom_type}</type>
+                            <srid>{srid}</srid>
+                        </geometry>
+                        {parameters}
+                    </virtualTable>
+                </entry>
+            </metadata>
         </featureType>""".format(
-            name, sql, geom_name, geom_type, workspace, srid
+            name=name,
+            enabled=str(enabled).lower(),
+            native_name_tag=f"<nativeName>{native_name}</nativeName>" if native_name else "",
+            workspace=workspace,
+            srid=srid,
+            native_bbox=native_bbox_xml,
+            latlon_bbox=latlon_bbox_xml,
+            projection_policy_tag=f"<projectionPolicy>{projection_policy}</projectionPolicy>" if projection_policy else "",
+            sql=sql,
+            geom_name=geom_name,
+            geom_type=geom_type,
+            parameters=parameters_xml
         )
 
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
