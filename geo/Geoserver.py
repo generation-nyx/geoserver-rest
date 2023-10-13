@@ -1984,8 +1984,8 @@ class Geoserver:
         geom_type: str = "Geometry",
         srid: Optional[int] = 4326,
         workspace: Optional[str] = None,
+        escape_sql: bool = True,
         enabled: bool = True,
-        escape_sql=str(escape_sql).lower(),
         native_bbox: Optional[Tuple[float, float, float, float, int]] = None,
         latlon_bbox: Optional[Tuple[float, float, float, float, int]] = None,
         projection_policy: Optional[str] = None,
@@ -2062,6 +2062,8 @@ class Geoserver:
             geom_name=geom_name,
             geom_type=geom_type,
             parameters=parameters_xml
+            escape_sql=str(escape_sql).lower(),
+
         )
 
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
