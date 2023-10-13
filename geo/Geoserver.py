@@ -2038,7 +2038,7 @@ class Geoserver:
                     <virtualTable>
                         <name>{name}</name>
                         <sql>{sql}</sql>
-                        <escapeSql>true</escapeSql>
+                        <escapeSql>false</escapeSql>
                         <geometry>
                             <name>{geom_name}</name>
                             <type>{geom_type}</type>
