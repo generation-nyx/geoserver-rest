@@ -2061,9 +2061,8 @@ class Geoserver:
             sql=sql,
             geom_name=geom_name,
             geom_type=geom_type,
-            parameters=parameters_xml
-            escape_sql=str(escape_sql).lower(),
-
+            parameters=parameters_xml,
+            escape_sql=str(escape_sql).lower()
         )
 
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
