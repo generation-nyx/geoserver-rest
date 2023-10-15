@@ -1,6 +1,6 @@
 pygments
 requests
 seaborn
-gdal
+gdal==3.4.1
 matplotlib
 xmltodict
