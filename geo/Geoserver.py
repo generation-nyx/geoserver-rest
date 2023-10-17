@@ -2064,7 +2064,7 @@ class Geoserver:
             parameters=parameters_xml,
             escape_sql=str(escape_sql).lower()
         )
-        #print(layer_xml)
+        print(layer_xml)
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
             self.service_url, workspace, store_name
         )
