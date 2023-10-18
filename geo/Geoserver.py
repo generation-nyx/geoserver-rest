@@ -1864,7 +1864,7 @@ class Geoserver:
                                     <maxy>{maxy}</maxy>
                                     <srs>EPSG:{srid}</srs>
                                 </latLonBoundingBox>"""     
-        print(layer_xml)   
+ 
         layer_xml = f"""<featureType>
                     <name>{pg_table}</name>
                     <title>{title}</title>
@@ -1875,6 +1875,7 @@ class Geoserver:
                     {abstract_xml}
                     {keywords_xml}
                 </featureType>"""
+        print(layer_xml)  
         headers = {"content-type": "text/xml"}
 
         r = requests.post(
