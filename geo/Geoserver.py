@@ -1863,7 +1863,8 @@ class Geoserver:
                                     <maxx>{maxx}</maxx>
                                     <maxy>{maxy}</maxy>
                                     <srs>EPSG:{srid}</srs>
-                                </latLonBoundingBox>"""        
+                                </latLonBoundingBox>"""     
+        print(layer_xml)   
         layer_xml = f"""<featureType>
                     <name>{pg_table}</name>
                     <title>{title}</title>
