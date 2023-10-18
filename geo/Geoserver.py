@@ -1800,6 +1800,9 @@ class Geoserver:
         advertised: Optional[bool] = True,
         abstract: Optional[str] = None,
         keywords: Optional[List[str]] = None,
+        srid: Optional[int] = 4326,
+        native_bbox: Optional[Tuple[float, float, float, float, int]] = None,
+        latlon_bbox: Optional[Tuple[float, float, float, float, int]] = None,
     ):
         """
         Publish a featurestore to geoserver.
@@ -1838,11 +1841,36 @@ class Geoserver:
             for keyword in keywords:
                 keywords_xml += f"<string>{keyword}</string>"
             keywords_xml += "</keywords>"
+        srs_xml = f"<srs>EPSG:{srid}</srs>"
+        native_bbox_xml = ""
+        if native_bbox:
+            minx, miny, maxx, maxy, srid = native_bbox
+            native_bbox_xml = f"""<nativeBoundingBox>
+                                    <minx>{minx}</minx>
+                                    <miny>{miny}</miny>
+                                    <maxx>{maxx}</maxx>
+                                    <maxy>{maxy}</maxy>
+                                    <srs>EPSG:{srid}</srs>
+                                </nativeBoundingBox>"""
 
+        # Add latlon_bbox XML tag
+        latlon_bbox_xml = ""
+        if latlon_bbox:
+            minx, miny, maxx, maxy, srid = latlon_bbox
+            latlon_bbox_xml = f"""<latLonBoundingBox>
+                                    <minx>{minx}</minx>
+                                    <miny>{miny}</miny>
+                                    <maxx>{maxx}</maxx>
+                                    <maxy>{maxy}</maxy>
+                                    <srs>EPSG:{srid}</srs>
+                                </latLonBoundingBox>"""        
         layer_xml = f"""<featureType>
                     <name>{pg_table}</name>
                     <title>{title}</title>
                     <advertised>{advertised}</advertised>
+                    {srs_xml}
+                    {native_bbox_xml}
+                    {latlon_bbox_xml}                    
                     {abstract_xml}
                     {keywords_xml}
                 </featureType>"""
